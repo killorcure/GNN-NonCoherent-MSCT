@@ -65,15 +65,11 @@ def normalize_data_gai(train_data, test_data, general_para):
 
 def normalize_data(train_data, test_data, general_para):
     Nt = general_para.N_antennas
-    print('train_data:{}'.format(train_data))  # 200*3*3*2
-    tmp_mask = np.expand_dims(np.eye(train_K), axis=-1)  # 3*3*3
-    print('tmp_mask1:{}'.format(tmp_mask))
+
+    tmp_mask = np.expand_dims(np.eye(train_K), axis=-1)
     tmp_mask = [tmp_mask for i in range(Nt)]
-    print('tmp_mask2:{}'.format(tmp_mask))  # 2*3*3*3
     mask = np.concatenate(tmp_mask, axis=-1)
-    print('mask1:{}'.format(mask))  # 3*3*3*2
-    mask = np.expand_dims(mask, axis=0)  # 1*3*3*2
-    print('mask2:{}'.format(mask))
+    mask = np.expand_dims(mask, axis=0)
 
     train_copy = np.copy(train_data)
     diag_H = np.multiply(mask, train_copy)
@@ -2444,11 +2440,11 @@ train_K = train_S * users  ## 可能的收发匹配数量
 test_K = train_K
 # train_layouts = 30  ## 训练次数
 # test_layouts = 20  ## 测试次数
-train_layouts = 100  ## 训练次数
+train_layouts = 20  ## 训练次数
 test_layouts = 2  ## 测试次数
 SNR_dB = 20
 # Nt = 16  ## 每个波束的发射天线数
-Nt = 16  ## 每个波束的发射天线数
+Nt = 2  ## 每个波束的发射天线数
 only_GNN = 1
 Epoches = 100
 generate_data = 1
