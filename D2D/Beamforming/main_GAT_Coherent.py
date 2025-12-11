@@ -454,7 +454,14 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     # # dist2[dist2 > threshold] = 0
     # dist2[dist2 = 10] = 0  # 这里每个连接对之间都有干扰
     print('dist2_1:{}'.format(dist2))
+
+    dist2 = np.copy(dist)
+    mask = np.eye(K)
+    diag_dist = np.multiply(mask, dist2)
+    dist2 = dist2 + 100000 * diag_dist
+    dist2[dist2 > 10000] = 0
     attr_ind = np.nonzero(dist2)
+
     print('attr_ind:{}'.format(attr_ind))
     attr_ind_expanded = np.expand_dims(dist2, axis=2)
     norm_csi_real_edge = norm_csi_real * attr_ind_expanded
