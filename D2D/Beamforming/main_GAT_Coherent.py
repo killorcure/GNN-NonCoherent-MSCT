@@ -1882,7 +1882,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
             #     H_new[iter, user_index, user_index,:], signal, signal_power, noise_power))
             interference_sum_power_syn = torch.zeros(1).cuda()
             interference_sum_power_asyn_no_add = torch.zeros(1).cuda()
-            interference_sum_power_asyn_add = torch.zeros(0).cuda()
+            interference_sum_power_asyn_add = torch.zeros(1).cuda()
             # print('sr_loss===user: {}, compute transmit_power: {}, noise_power: {}'.format(user_index, transmit_power, noise_power))
             for other_link in range(users*train_S):
                 # interference_signal_sync = torch.empty(0).cuda()
