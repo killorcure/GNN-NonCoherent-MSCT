@@ -402,27 +402,27 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     x = torch.tensor(x, dtype=torch.float)
 
     # dist2 = np.copy(dist)
-    # dist2 = np.zeros((n, n))
-    # for i in range(n):
-    #     for j in range(n):
-    #         # if (i % users) == (j % users):
-    #         #     dist2[i][j] = 0
-    #         # ## 卫星间波束干扰约束
-    #         # elif (i / (users * beams)) == (j / (users * beams)) and (i % users) == (j % users):
-    #         #     dist2[i][j] = 0
-    #         # else:
-    #         #     dist2[i][j] = 1
-    #         if i != j:
-    #             dist2[i][j] = 1
-    #         # elif (i != j) and ((i % users) == (j % users)):
-    #         #     dist2[i][j] = -1
-    #         # if i == j:
-    #         #     dist2[i][j] = 0
-    #         # elif (i % users) == (j % users):
-    #         #     dist2[i][j] = 0
-    #         # else:
-    #         #     dist2[i][j] = 1
-    # print('dist2:{}'.format(dist2))
+    dist2 = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            # if (i % users) == (j % users):
+            #     dist2[i][j] = 0
+            # ## 卫星间波束干扰约束
+            # elif (i / (users * beams)) == (j / (users * beams)) and (i % users) == (j % users):
+            #     dist2[i][j] = 0
+            # else:
+            #     dist2[i][j] = 1
+            if i != j:
+                dist2[i][j] = 1
+            # elif (i != j) and ((i % users) == (j % users)):
+            #     dist2[i][j] = -1
+            # if i == j:
+            #     dist2[i][j] = 0
+            # elif (i % users) == (j % users):
+            #     dist2[i][j] = 0
+            # else:
+            #     dist2[i][j] = 1
+    print('dist2:{}'.format(dist2))
     # # init_links = [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]
     # # s = len(init_links)
     # # for i in range(s):
@@ -451,11 +451,11 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     # # dist2[dist2 = 10] = 0  # 这里每个连接对之间都有干扰
     # print('dist2_1:{}'.format(dist2))
 
-    dist2 = np.copy(dist)
-    mask = np.eye(users*train_S)
-    diag_dist = np.multiply(mask, dist2)
-    dist2 = dist2 + 100000 * diag_dist
-    dist2[dist2 > 10000] = 0
+    # dist2 = np.copy(dist)
+    # mask = np.eye(users*train_S)
+    # diag_dist = np.multiply(mask, dist2)
+    # dist2 = dist2 + 100000 * diag_dist
+    # dist2[dist2 > 10000] = 0
     attr_ind = np.nonzero(dist2)
 
     print('attr_ind:{}'.format(attr_ind))
@@ -489,8 +489,8 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     print('flag:{}, size:{}'.format(flag, flag.shape))
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, flag, delta_delay), axis=1)
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, delta_delay), axis=1)
-    # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
-    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag), axis=1)
+    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
+    # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag), axis=1)
     edge_attr = torch.tensor(edge_attr, dtype=torch.float)
     print('edge_attr:{}, size:{}'.format(edge_attr, edge_attr.shape))
 
@@ -545,7 +545,7 @@ def MLP(channels, batch_norm=True):
 
 class IGConv(MessagePassing):
     def __init__(self, mlp1, mlp2, node_feat_dim, edge_feat_dim, heads=2, leaky_slope=0.01, att_dropout=0.01,
-                 feat_dropout=0.01, aggr='max', **kwargs):
+                 feat_dropout=0.01, aggr='sum', **kwargs):
         # super(IGConv, self).__init__(aggr='max', **kwargs)
         super(IGConv, self).__init__(aggr=aggr, **kwargs)
 
@@ -607,13 +607,13 @@ class IGConv(MessagePassing):
         print('update===aggr_out:{}, size:{}'.format(aggr_out, aggr_out.shape))
         print('update===x:{}, size:{}'.format(x, x.shape))
         tmp = torch.cat([x, aggr_out], dim=1)
-        comb = self.mlp2(tmp)
+        comb_all = self.mlp2(tmp)
         print('update===comb_all:{}'.format(comb))
-        # comb = comb_all[:, 1:2 * Nt + 1] # w
+        comb = comb_all[:, 1:2 * Nt + 1] # w
         # comb = comb_all[:, 0:2 * Nt] # w
         # links_res = comb_all[:, 0:1] # alpha
-        # add_delta_delay = comb[:, 0:1] # tau_c
-        # add_delta_delay = torch.sigmoid(add_delta_delay)
+        add_delta_delay = comb[:, 0:1] # tau_c
+        add_delta_delay = torch.sigmoid(add_delta_delay)
         # add_delta_delay = torch.sigmoid(add_delta_delay/0.5)
         # links_onehot = update_links(links_res)
         # links_onehot = links_res
@@ -643,10 +643,10 @@ class IGConv(MessagePassing):
         # print('update===comp1:{}'.format(comp1))
         # comb = torch.div(comb, torch.max(comp1, nor))
         # print('update===comb:{}'.format(comb))
-        # comb_res = torch.cat([add_delta_delay, comb], dim=1)
+        comb_res = torch.cat([add_delta_delay, comb], dim=1)
         # print('update===comb_res:{}'.format(comb_res))
-        # return torch.cat([comb_res, x[:, :2 * Nt - 1]], dim=1)
-        return torch.cat([comb, x[:, :2 * Nt]], dim=1)
+        return torch.cat([comb_res, x[:, :2 * Nt - 1]], dim=1)
+        # return torch.cat([comb, x[:, :2 * Nt]], dim=1)
 
     def forward(self, x, edge_index, edge_attr):
         print('forward===x:{}, edge_index:{}, edge_attr:{}'.format(x, edge_index, edge_attr))
@@ -739,9 +739,9 @@ class IGCNet(torch.nn.Module):
     def __init__(self):
         super(IGCNet, self).__init__()
 
-        self.mlp1 = MLP([6 * Nt, 64, 64])
+        self.mlp1 = MLP([6 * Nt+1, 64, 64])
         self.mlp2 = MLP([64 + 4 * Nt, 32])
-        self.mlp2 = Seq(*[self.mlp2, Seq(Lin(32, 2 * Nt))])
+        self.mlp2 = Seq(*[self.mlp2, Seq(Lin(32, 1 + 2 * Nt))])
         self.network_layer = 3
         self.heads = 1
         self.conv = IGConv(self.mlp1, self.mlp2, node_feat_dim=(4*Nt), edge_feat_dim=2*Nt+1, heads=self.heads)
@@ -749,15 +749,15 @@ class IGCNet(torch.nn.Module):
 
     def forward(self, data):
         x0, edge_attr, edge_index = data.x, data.edge_attr, data.edge_index
-        # for i in range(self.network_layer):
-        #     out = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
-        #     x0 = out
-        x1 = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
-        # new_data1 = update_edge_attr(data, x1[:,0:1])
-        x2 = self.conv(x=x1, edge_index=edge_index, edge_attr=edge_attr)
-        # new_data2 = update_edge_attr(new_data1, x2[:,0:1])
-        out = self.conv(x=x2, edge_index=edge_index, edge_attr=edge_attr)
-        return out
+        for i in range(self.network_layer):
+            out = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
+            x0 = out
+        # x1 = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
+        # # new_data1 = update_edge_attr(data, x1[:,0:1])
+        # x2 = self.conv(x=x1, edge_index=edge_index, edge_attr=edge_attr)
+        # # new_data2 = update_edge_attr(new_data1, x2[:,0:1])
+        # out = self.conv(x=x2, edge_index=edge_index, edge_attr=edge_attr)
+        return x0
 
 
 def power_check(p):
