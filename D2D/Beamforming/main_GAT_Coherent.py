@@ -493,7 +493,8 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     print('flag:{}, size:{}'.format(flag, flag.shape))
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, flag, delta_delay), axis=1)
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, delta_delay), axis=1)
-    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
+    # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
+    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag), axis=1)
     edge_attr = torch.tensor(edge_attr, dtype=torch.float)
     print('edge_attr:{}, size:{}'.format(edge_attr, edge_attr.shape))
 
@@ -728,7 +729,8 @@ class IGConv(MessagePassing):
         tmp = torch.cat([x, aggr_out], dim=1)
         comb_all = self.mlp2(tmp)
         print('update===comb_all:{}'.format(comb_all))
-        comb = comb_all[:, 1:2 * Nt + 1] # w
+        # comb = comb_all[:, 1:2 * Nt + 1] # w
+        comb = comb_all[:, 0:2 * Nt] # w
         # links_res = comb_all[:, 0:1] # alpha
         add_delta_delay = comb_all[:, 0:1] # tau_c
         add_delta_delay = torch.sigmoid(add_delta_delay)
@@ -763,7 +765,8 @@ class IGConv(MessagePassing):
         print('update===comb:{}'.format(comb))
         comb_res = torch.cat([add_delta_delay, comb], dim=1)
         # print('update===comb_res:{}'.format(comb_res))
-        return torch.cat([comb_res, x[:, :2 * Nt - 1]], dim=1)
+        # return torch.cat([comb_res, x[:, :2 * Nt - 1]], dim=1)
+        return torch.cat([comb, x[:, :2 * Nt]], dim=1)
 
     def forward(self, x, edge_index, edge_attr):
         print('forward===x:{}, edge_index:{}, edge_attr:{}'.format(x, edge_index, edge_attr))
@@ -856,9 +859,9 @@ class IGCNet(torch.nn.Module):
     def __init__(self):
         super(IGCNet, self).__init__()
 
-        self.mlp1 = MLP([6 * Nt+1, 64, 64])
+        self.mlp1 = MLP([6 * Nt, 64, 64])
         self.mlp2 = MLP([64 + 4 * Nt, 32])
-        self.mlp2 = Seq(*[self.mlp2, Seq(Lin(32, 1 + 2 * Nt))])
+        self.mlp2 = Seq(*[self.mlp2, Seq(Lin(32, 2 * Nt))])
         self.network_layer = 3
         self.heads = 1
         self.conv = IGConv(self.mlp1, self.mlp2, node_feat_dim=(4*Nt), edge_feat_dim=2*Nt+1, heads=self.heads)
