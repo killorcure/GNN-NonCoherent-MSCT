@@ -1830,7 +1830,7 @@ def test(epoch):
 
 train_S = 2  ## 卫星数量
 beams = 3  ## 每个卫星配置的波束数量
-users = 2  ## 用户数量
+users = 5  ## 用户数量
 # train_K = train_S * beams * users  ## 可能的收发匹配数量
 train_K = train_S * users  ## 可能的收发匹配数量
 test_K = train_K
