@@ -1911,7 +1911,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     avr_rate_syn = torch.mean(rate_iter_syn)
     avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
     avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
-    # print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
+    print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
     if add_mode == 1:
         loss = torch.neg(avr_rate_asyn_add)
     elif add_mode == 0:
