@@ -406,54 +406,54 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     x = torch.tensor(x, dtype=torch.float)
 
     # dist2 = np.copy(dist)
-    dist2 = np.zeros((n, n))
-    for i in range(n):
-        for j in range(n):
-            # if (i % users) == (j % users):
-            #     dist2[i][j] = 0
-            # ## 卫星间波束干扰约束
-            # elif (i / (users * beams)) == (j / (users * beams)) and (i % users) == (j % users):
-            #     dist2[i][j] = 0
-            # else:
-            #     dist2[i][j] = 1
-            if i != j:
-                dist2[i][j] = 1
-            # elif (i != j) and ((i % users) == (j % users)):
-            #     dist2[i][j] = -1
-            # if i == j:
-            #     dist2[i][j] = 0
-            # elif (i % users) == (j % users):
-            #     dist2[i][j] = 0
-            # else:
-            #     dist2[i][j] = 1
-    print('dist2:{}'.format(dist2))
-    # init_links = [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]
-    # s = len(init_links)
-    # for i in range(s):
-    #     for j in range(s):
-    #         ## 波束干扰约束
-    #         if i != j and init_links[i] == 1 and init_links[j] == 1:
-    #             dist2[i][j] = 10
-    #         else:
-    #             dist2[i][j] = 0
-    # if (i / users) == (j / users):
-    #     dist2[i][j] = 0
-    # elif (i / (users*beams)) == (j / (users*beams)) and (i % users) == (j % users):
-    #     dist2[i][j] = 0
-    # ## 卫星间波束干扰约束
-    # elif (i / (users*beams)) == (j / (users*beams)) and (i % users) == (j % users):
-    #     dist2[i][j] = 0
-
-    # mask = np.eye(K)
-    # diag_dist = np.multiply(mask, dist2)
+    # dist2 = np.zeros((n, n))
+    # for i in range(n):
+    #     for j in range(n):
+    #         # if (i % users) == (j % users):
+    #         #     dist2[i][j] = 0
+    #         # ## 卫星间波束干扰约束
+    #         # elif (i / (users * beams)) == (j / (users * beams)) and (i % users) == (j % users):
+    #         #     dist2[i][j] = 0
+    #         # else:
+    #         #     dist2[i][j] = 1
+    #         if i != j:
+    #             dist2[i][j] = 1
+    #         # elif (i != j) and ((i % users) == (j % users)):
+    #         #     dist2[i][j] = -1
+    #         # if i == j:
+    #         #     dist2[i][j] = 0
+    #         # elif (i % users) == (j % users):
+    #         #     dist2[i][j] = 0
+    #         # else:
+    #         #     dist2[i][j] = 1
     # print('dist2:{}'.format(dist2))
-    # print('mask:{}'.format(mask))
-    # print('diag_dist1:{}'.format(diag_dist))
-    # dist2 = dist2 + 1000 * diag_dist
+    # # init_links = [1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1]
+    # # s = len(init_links)
+    # # for i in range(s):
+    # #     for j in range(s):
+    # #         ## 波束干扰约束
+    # #         if i != j and init_links[i] == 1 and init_links[j] == 1:
+    # #             dist2[i][j] = 10
+    # #         else:
+    # #             dist2[i][j] = 0
+    # # if (i / users) == (j / users):
+    # #     dist2[i][j] = 0
+    # # elif (i / (users*beams)) == (j / (users*beams)) and (i % users) == (j % users):
+    # #     dist2[i][j] = 0
+    # # ## 卫星间波束干扰约束
+    # # elif (i / (users*beams)) == (j / (users*beams)) and (i % users) == (j % users):
+    # #     dist2[i][j] = 0
+    #
+    # # mask = np.eye(K)
+    # # diag_dist = np.multiply(mask, dist2)
+    # # print('dist2:{}'.format(dist2))
+    # # print('mask:{}'.format(mask))
+    # # print('diag_dist1:{}'.format(diag_dist))
+    # # dist2 = dist2 + 1000 * diag_dist
+    # # print('dist2_1:{}'.format(dist2))
+    # # # dist2[dist2 > threshold] = 0
+    # # dist2[dist2 = 10] = 0  # 这里每个连接对之间都有干扰
     # print('dist2_1:{}'.format(dist2))
-    # # dist2[dist2 > threshold] = 0
-    # dist2[dist2 = 10] = 0  # 这里每个连接对之间都有干扰
-    print('dist2_1:{}'.format(dist2))
 
     dist2 = np.copy(dist)
     mask = np.eye(users*train_S)
@@ -463,9 +463,9 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     attr_ind = np.nonzero(dist2)
 
     print('attr_ind:{}'.format(attr_ind))
-    attr_ind_expanded = np.expand_dims(dist2, axis=2)
-    norm_csi_real_edge = norm_csi_real * attr_ind_expanded
-    norm_csi_imag_edge = norm_csi_imag * attr_ind_expanded
+    # attr_ind_expanded = np.expand_dims(dist2, axis=2)
+    # norm_csi_real_edge = norm_csi_real * attr_ind_expanded
+    # norm_csi_imag_edge = norm_csi_imag * attr_ind_expanded
     # norm_csi_real_min = norm_csi_real.mean(axis=(0, 1), keepdims=True)  # 计算每个天线特征的最小值
     # norm_csi_real_max = norm_csi_real.std(axis=(0, 1), keepdims=True)  # 计算每个天线特征的最大值
     # norm_csi_imag_min = norm_csi_imag.mean(axis=(0, 1), keepdims=True)  # 计算每个天线特征的最小值
@@ -869,15 +869,15 @@ class IGCNet(torch.nn.Module):
 
     def forward(self, data):
         x0, edge_attr, edge_index = data.x, data.edge_attr, data.edge_index
-        for i in range(self.network_layer):
-            out = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
-            x0 = out
-        # x1 = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
-        # # new_data1 = update_edge_attr(data, x1[:,0:1])
-        # x2 = self.conv(x=x1, edge_index=edge_index, edge_attr=edge_attr)
-        # # new_data2 = update_edge_attr(new_data1, x2[:,0:1])
-        # out = self.conv(x=x2, edge_index=edge_index, edge_attr=edge_attr)
-        return x0
+        # for i in range(self.network_layer):
+        #     out = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
+        #     x0 = out
+        x1 = self.conv(x=x0, edge_index=edge_index, edge_attr=edge_attr)
+        # new_data1 = update_edge_attr(data, x1[:,0:1])
+        x2 = self.conv(x=x1, edge_index=edge_index, edge_attr=edge_attr)
+        # new_data2 = update_edge_attr(new_data1, x2[:,0:1])
+        out = self.conv(x=x2, edge_index=edge_index, edge_attr=edge_attr)
+        return out
 
 
 def power_check(p):
@@ -1788,8 +1788,8 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     # print('sr_loss===add_delta_delay sigmoid: {} sizez:{}'.format(add_delta_delay, add_delta_delay.shape))
     add_delta_delay = torch.reshape(add_delta_delay, (-1, K, 1, 1))
     # links = update_links(links)
-    p1 = p[:, 1:N + 1]
-    p2 = p[:, N + 1:2 * N + 1]
+    p1 = p[:, :N]
+    p2 = p[:, N:2 * N]
     # print('sr_loss===p1:{}'.format(p1))
     # print('sr_loss===p2:{}'.format(p2))
     # p1 = torch.mul(links, p1)
@@ -1948,9 +1948,9 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
                                                                                    rx_power3 + rx_power4)
     mask = torch.eye(users*train_S, device=device)
     valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
-    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
-    noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    rate = torch.log2(1 + torch.div(valid_rx_power, interference+1))
+    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)+1
+    # noise = valid_rx_power / (10 ** (SNR_dB / 10))
+    rate = torch.log2(1 + torch.div(valid_rx_power, interference))
     sum_rate = torch.mean(torch.sum(rate, axis=1))
     loss = torch.neg(sum_rate)
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
@@ -2521,7 +2521,7 @@ test_data_list = proc_data_asyn(test_csis, test_dists, test_delays, test_etas, n
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = IGCNet().to(device)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.9)
 
 # train_loader = DataLoader(train_data_list, batch_size=32, shuffle=True, num_workers=1)
