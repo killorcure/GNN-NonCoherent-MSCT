@@ -255,6 +255,8 @@ def CSI_generate_new(general_para, distances):
     # print('final_CSI:{}'.format(final_CSI))
     print('final_CSI_new:{}'.format(final_CSI_new))
 
+    # distances = np.ones((general_para.n_receiver, general_para.n_receiver))
+    distances = 500 + np.random.rand(L, L) * 500
     dists = np.expand_dims(distances, axis=-1)
     shadowing = np.random.randn(L, L, Nt)
     large_scale_CSI = 4.4 * 10 ** 5 / ((dists ** 1.88) * (10 ** (shadowing * 6.3 / 20)))
