@@ -1880,9 +1880,9 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
             transmit_power = 0
             # print('sr_loss===H3[iter, user_index, user_index,:]: {} signal:{} signal_power: {} noise_power: {}'.format(
             #     H_new[iter, user_index, user_index,:], signal, signal_power, noise_power))
-            interference_sum_power_syn = torch.empty(0).cuda()
-            interference_sum_power_asyn_no_add = torch.empty(0).cuda()
-            interference_sum_power_asyn_add = torch.empty(0).cuda()
+            interference_sum_power_syn = torch.zeros(1).cuda()
+            interference_sum_power_asyn_no_add = torch.zeros(1).cuda()
+            interference_sum_power_asyn_add = torch.zeros(0).cuda()
             # print('sr_loss===user: {}, compute transmit_power: {}, noise_power: {}'.format(user_index, transmit_power, noise_power))
             for other_link in range(users*train_S):
                 # interference_signal_sync = torch.empty(0).cuda()
@@ -1925,7 +1925,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
            syn_zf_rate, asyn_zf_rate_noadd, asyn_zf_rate
 
 
-def calculate_eta(Delta_1):
+def calculate_eta_one(Delta_1):
     beta = 0.2
     return 1-0.25*beta+0.25*beta*torch.cos(2*torch.pi*Delta_1)
     # if Delta_1 == Delta_2:
@@ -1936,7 +1936,7 @@ def calculate_eta(Delta_1):
     #         beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2),
     #         2*(beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1)-1))*torch.sinc((Delta_2-Delta_1)*beta)
 
-def calculate_eta_one(Delta_1):
+def calculate_eta(Delta_1, Delta_2):
     beta = 0.2
     if Delta_1 == Delta_2:
         return 1-0.5*beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2)
