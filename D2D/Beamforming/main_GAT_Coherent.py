@@ -416,7 +416,7 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
             #     dist2[i][j] = 0
             # else:
             #     dist2[i][j] = 1
-            if (i % users) != (j % users):
+            if i != j:
                 dist2[i][j] = 1
             # elif (i != j) and ((i % users) == (j % users)):
             #     dist2[i][j] = -1
@@ -1836,7 +1836,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
         rx_all_power = torch.mul(H_new_conj, p3_norm)
     else:
         rx_all_power = torch.mul(H4, p3_norm)
-    # print('sr_loss===rx_all_power:{}, size:{}'.format(rx_all_power, rx_all_power.shape))
+    print('sr_loss===rx_all_power:{}, size:{}'.format(rx_all_power, rx_all_power.shape))
     rx_all_power = torch.sum(rx_all_power, axis=-1)
     print('sr_loss===sum rx_all_power:{}, size:{}'.format(rx_all_power, rx_all_power.shape))
     initial_delay = data.initial_delay
@@ -1871,10 +1871,11 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
         rate_syn = torch.zeros(1).cuda()
         rate_asyn_no_add = torch.zeros(1).cuda()
         rate_asyn_add = torch.zeros(1).cuda()
-        for user_index in range(users):
-            valid_signal = torch.empty(0).cuda()
-            signal = H_new[iter, user_index, user_index,:].abs()**2
-            signal_power = signal.mean()
+        for link in range(users*train_S):
+            valid_signal = torch.zeros(0).cuda()
+            valid_signal = rx_all_power[iter, link, link].view(1)
+            # signal = H_new[iter, user_index, user_index,:].abs()**2
+            # signal_power = signal.mean()
             # noise_power = signal_power / (10**(SNR_dB/10))
             transmit_power = 0
             # print('sr_loss===H3[iter, user_index, user_index,:]: {} signal:{} signal_power: {} noise_power: {}'.format(
@@ -1882,104 +1883,27 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
             interference_sum_power_syn = torch.empty(0).cuda()
             interference_sum_power_asyn_no_add = torch.empty(0).cuda()
             interference_sum_power_asyn_add = torch.empty(0).cuda()
-            for link in range(rx_all_power.shape[1]):
-                # satellite_index = int(link/users)
-                if int(link % users) == user_index:
-                    valid_signal = torch.cat(
-                        (valid_signal, rx_all_power[iter, link, link].view(1)))
-                    transmit_power += torch.sum(p3_norm[iter, link, 0, :].abs() ** 2)
-                # else:
-                #     valid_link = satellite_index*users+user_index
-                #     interference_signal = torch.cat(
-                #         (interference_signal, rx_all_power[iter, link, user_index].view(1)))
-                #     Delta_tau = torch.cat(
-                #         (Delta_tau, initial_delay[iter, link, valid_link].view(1)))
-            noise_power = transmit_power / (10**(SNR_dB/10))
-            print('sr_loss===user: {}, compute transmit_power: {}, noise_power: {}'.format(user_index, transmit_power, noise_power))
-            for other_user_index in range(users):
-                interference_signal = torch.empty(0).cuda()
-                Delta_tau_asyn = torch.empty(0).cuda()
-                Delta_tau_syn = torch.empty(0).cuda()
-                Add_delta_tau = torch.empty(0).cuda()
-                if other_user_index != user_index:
-                    # print('before calculate interference_signal:{}'.format(interference_signal))
-                    for other_link in range(rx_all_power.shape[1]):
-                        if int(other_link % users) == other_user_index:
-                            satellite_index = int(other_link / users)
-                            valid_link = satellite_index * users + user_index
-                            interference_signal = torch.cat(
-                                (interference_signal, rx_all_power[iter, other_link, valid_link].view(1)))
-                            Delta_tau_asyn = torch.cat(
-                                        (Delta_tau_asyn, initial_delay[iter, other_link, valid_link].view(1)))
-                            if eta_add == 1:
-                                Add_delta_tau = torch.cat((Add_delta_tau, add_delta_delay[iter, valid_link, 0].view(1)
-                                                           - add_delta_delay[iter, other_link, 0].view(1)))
-                    interference_signal_conj = interference_signal.conj()
-                    # print('sr_loss===Add_delta_tau:{} valid_signal: {} interference_signal:{} interference_signal_conj:{} Delta_tau:{}'.format(
-                    #     Add_delta_tau, valid_signal, interference_signal, interference_signal_conj, Delta_tau_asyn))
-                    # if eta_enable == 0:
-                        # interference_power = torch.outer(interference_signal, interference_signal_conj)
-                    interference_conj_matric = torch.outer(interference_signal, interference_signal_conj)
-                    interference_conj_matric_transpose = interference_conj_matric.conj().T
-                    # print('sr_loss===interference_conj_matric:{}, whether a gongezhuanzhi:{}'.format(
-                    #     interference_conj_matric, torch.allclose(interference_conj_matric, interference_conj_matric_transpose)))
-                    # interference_power_syn = torch.sum(torch.outer(interference_signal, interference_signal_conj))
-                    # interference_sum_power_syn = torch.cat((interference_sum_power_syn, interference_power_syn))
-                    # else:
-                    interference_power_asyn = torch.outer(interference_signal, interference_signal_conj)
-                    print('sr_loss===outer interference_power original: {} size:{}'.format(interference_power_asyn, interference_power_asyn.shape))
-                    #diag_elements = torch.diag(interference_power_asyn)
-                    #interference_power_asyn = torch.diag(diag_elements)
-                    print('sr_loss===outer interference_power: {} size:{}'.format(interference_power_asyn, interference_power_asyn.shape))
-                    eta_value_no_add = torch.outer(Delta_tau_asyn, Delta_tau_asyn)
-                    eta_value_add = torch.outer(Delta_tau_asyn, Delta_tau_asyn)
-                    # print('sr_loss===init eta_value: {} size:{}'.format(eta_value_no_add, eta_value_no_add.shape))
-                    for i in range(Delta_tau_asyn.shape[0]):
-                        for j in range(Delta_tau_asyn.shape[0]):
-                            # if eta_add == 0:
-                            eta_value_no_add[i, j] = calculate_eta(Delta_tau_asyn[i], Delta_tau_asyn[j])
-                            # elif eta_add == 1:
-                            # eta_value_add[i, j] = calculate_eta(Delta_tau_asyn[i]+Add_delta_tau[i], Delta_tau_asyn[j]+Add_delta_tau[j])
-                            eta_value_add[i, j] = calculate_eta(Add_delta_tau[i], Add_delta_tau[j])
-                    # print('sr_loss===config eta_value_no_add: {} eta_value_add:{}'.format(eta_value_no_add, eta_value_add))
-                    interference_power_asyn_no_add = torch.mul(interference_power_asyn, eta_value_no_add)
-                    interference_power_asyn_add = torch.mul(interference_power_asyn, eta_value_add)
-                    # print('sr_loss===mul interference_power_asyn_no_add: {} interference_power_asyn_add:{}'.format(interference_power_asyn_no_add, interference_power_asyn_add))
-                    # interference_power_syn = torch.sum(interference_power_syn)
-                    interference_power_syn = torch.sum(interference_power_asyn)
-                    interference_power_asyn_no_add = torch.sum(interference_power_asyn_no_add)
-                    interference_power_asyn_add = torch.sum(interference_power_asyn_add)
-                    # print('sr_loss===interference_power_syn:{} interference_power_asyn_no_add:{} interference_power_asyn_add:{}'.format(
-                    #     interference_power_syn, interference_power_asyn_no_add,interference_power_asyn_add))
-                    interference_sum_power_syn = torch.cat((interference_sum_power_syn, interference_power_syn.view(1)))
-                    interference_sum_power_asyn_no_add = torch.cat((interference_sum_power_asyn_no_add, interference_power_asyn_no_add.view(1)))
-                    interference_sum_power_asyn_add = torch.cat((interference_sum_power_asyn_add, interference_power_asyn_add.view(1)))
-                    # interference_signal_outer_async = torch.mul(interference_signal_outer, eta_value)
-                    # print('sr_loss===interference_sum_power_syn:{} interference_sum_power_asyn_no_add: {} interference_sum_power_asyn_add:{}'.format(
-                    #     interference_sum_power_syn, interference_sum_power_asyn_no_add,interference_sum_power_asyn_add))
-                        # interference_power = torch.sum(interference_signal_outer_async)
-            interference_sum_power_syn = torch.sum(interference_sum_power_syn)
-            interference_sum_power_asyn_no_add = torch.sum(interference_sum_power_asyn_no_add)
-            interference_sum_power_asyn_add = torch.sum(interference_sum_power_asyn_add)
-            if torch.abs(interference_sum_power_syn).item() < torch.abs(interference_sum_power_asyn_no_add).item() or \
-                    torch.abs(interference_sum_power_syn).item() < torch.abs(interference_sum_power_asyn_add).item():
-                print('invalid syn and asyn results...')
-            # print('sr_loss===Delta_tau: {} sizez:{}'.format(Delta_tau, Delta_tau.shape))
-            valid_signal_conj = valid_signal.conj()
-            #valid_power = torch.sum(torch.outer(valid_signal, valid_signal_conj))
-            valid_power = torch.sum(torch.outer(torch.abs(valid_signal), torch.abs(valid_signal_conj)))
+            # print('sr_loss===user: {}, compute transmit_power: {}, noise_power: {}'.format(user_index, transmit_power, noise_power))
+            for other_link in range(users*train_S):
+                # interference_signal_sync = torch.empty(0).cuda()
+                # interference_signal_async_no_add = torch.empty(0).cuda()
+                # interference_signal_async_no_add = torch.empty(0).cuda()
+                Delta_tau_asyn = torch.ones(1).cuda()
+                Delta_tau_syn = torch.ones(1).cuda()
+                Add_delta_tau = torch.ones(1).cuda()
+                if other_link != link:
+                    Delta_tau_asyn_no_add = calculate_eta_one(initial_delay[iter, other_link, link].view(1))
+                    Delta_tau_asyn_add = calculate_eta_one(add_delta_delay[iter, link, 0].view(1)
+                                                           - add_delta_delay[iter, other_link, 0].view(1))
+                    interference_sum_power_syn = interference_sum_power_syn + Delta_tau_syn * torch.abs(rx_all_power[iter, other_link, link].view(1)) ** 2
+                    interference_sum_power_asyn_no_add = interference_sum_power_asyn_no_add + torch.mul(Delta_tau_asyn_no_add, torch.abs(rx_all_power[iter, other_link, link].view(1)) ** 2)
+                    interference_sum_power_asyn_add = interference_sum_power_asyn_add + torch.mul(Delta_tau_asyn_add, torch.abs(rx_all_power[iter, other_link, link].view(1)) ** 2)
+            valid_power = torch.abs(valid_signal) ** 2
             noise_power = torch.abs(valid_power) / (10 ** (SNR_dB / 10))
-            valid_power_another = torch.abs(torch.sum(valid_signal))**2
-            # print('sr_loss===valid_power: {} valid_power_another:{} interference_sum_power_syn:{} interference_sum_power_asyn_no_add:{} interference_sum_power_asyn_add:{} noise_power:{}'.format(
-            #     valid_power, valid_power_another, interference_sum_power_syn, interference_sum_power_asyn_no_add, interference_sum_power_asyn_add, noise_power))
-            rate_syn += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_syn)+noise_power))
-            rate_asyn_no_add += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_asyn_no_add)+noise_power))
-            rate_asyn_add += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_asyn_add)+noise_power))
+            rate_syn += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_syn) + noise_power))
+            rate_asyn_no_add += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_asyn_no_add) + noise_power))
+            rate_asyn_add += torch.log2(1 + torch.div(torch.abs(valid_power), torch.abs(interference_sum_power_asyn_add) + noise_power))
             # print('sr_loss===user: {} rate_syn:{}, rate_asyn_no_add:{} rate_asyn_add:{}'.format(user_index, rate_syn, rate_asyn_no_add, rate_asyn_add))
-            ## 计算WMMSE
-                # for satellite in range(int(rx_all_power.shape[1]/users)):
-                #     valid_signal = torch.cat((valid_signal, rx_all_power[iter,satellite*users+user_index, user_index]))
-                #     valid_signal += rx_all_power[iter,satellite*users+user_index]
         rate_iter_syn = torch.cat((rate_iter_syn, rate_syn.view(1)))
         rate_iter_asyn_no_add = torch.cat((rate_iter_asyn_no_add, rate_asyn_no_add.view(1)))
         rate_iter_asyn_add = torch.cat((rate_iter_asyn_add, rate_asyn_add.view(1)))
@@ -1987,8 +1911,6 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     avr_rate_syn = torch.mean(rate_iter_syn)
     avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
     avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
-    if avr_rate_syn.item() > avr_rate_asyn_no_add or avr_rate_syn.item() > avr_rate_asyn_add:
-        print('invalid results...')
     # print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
     if add_mode == 1:
         loss = torch.neg(avr_rate_asyn_add)
@@ -2003,7 +1925,18 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
            syn_zf_rate, asyn_zf_rate_noadd, asyn_zf_rate
 
 
-def calculate_eta(Delta_1, Delta_2):
+def calculate_eta(Delta_1):
+    beta = 0.2
+    return 1-0.25*beta+0.25*beta*torch.cos(2*torch.pi*Delta_1)
+    # if Delta_1 == Delta_2:
+    #     return 1-0.5*beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2)
+    # else:
+    #     return torch.div(torch.cos(torch.pi*(Delta_2-Delta_1)*beta),
+    #                      1-4*beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1))*torch.sinc(Delta_2-Delta_1) + torch.div(
+    #         beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2),
+    #         2*(beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1)-1))*torch.sinc((Delta_2-Delta_1)*beta)
+
+def calculate_eta_one(Delta_1):
     beta = 0.2
     if Delta_1 == Delta_2:
         return 1-0.5*beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2)
