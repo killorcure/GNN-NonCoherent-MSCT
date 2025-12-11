@@ -254,7 +254,14 @@ def CSI_generate_new(general_para, distances):
     print('small_scale_CSI:{}'.format(small_scale_CSI))
     # print('final_CSI:{}'.format(final_CSI))
     print('final_CSI_new:{}'.format(final_CSI_new))
-    return final_CSI_new
+
+    dists = np.expand_dims(distances, axis=-1)
+    shadowing = np.random.randn(L, L, Nt)
+    large_scale_CSI = 4.4 * 10 ** 5 / ((dists ** 1.88) * (10 ** (shadowing * 6.3 / 20)))
+    small_scale_CSI = 1 / np.sqrt(2) * (np.random.randn(L, L, Nt) + 1j * np.random.randn(L, L, Nt)) * np.sqrt(
+        large_scale_CSI)
+    return small_scale_CSI
+    # return final_CSI_new
 
 def Delay_generate(general_para, distances): ##单天线 这里要改成对应的星地信道
     # Nt = general_para.N_antennas
