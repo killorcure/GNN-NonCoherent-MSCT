@@ -621,28 +621,28 @@ class IGConv(MessagePassing):
         print('update===comb:{}, shape:{}'.format(comb, comb.shape))
         # print('update===add_delta_delay:{}'.format(add_delta_delay))
         # shape_length = comb.shape[0]
-        # ## normalize
-        # comb_group = comb.view(-1, users, 2*Nt)
-        # square_sum = (comb_group ** 2).sum(dim=(1,2), keepdim=True)
-        # # square_sum = square_sum
-        # square_sum[square_sum <= 1] = 1
-        # # square_sum[square_sum > 100] = 100
-        # comb_normalized = 0.4*comb_group / torch.sqrt(square_sum)
-        # comb = comb_normalized.view(comb.shape[0], 2*Nt)
+        ## normalize
+        comb_group = comb.view(-1, users, 2*Nt)
+        square_sum = (comb_group ** 2).sum(dim=(1,2), keepdim=True)
+        # square_sum = square_sum
+        square_sum[square_sum <= 1] = 1
+        # square_sum[square_sum > 100] = 100
+        comb_normalized = 0.4*comb_group / torch.sqrt(square_sum)
+        comb = comb_normalized.view(comb.shape[0], 2*Nt)
 
         # row_norms = torch.norm(comb, p=2, dim=1, keepdim=True)  # 计算每行的L2范数
         # print('update===row_norms:{}'.format(row_norms))
         # # 按行归一化，使每行的模平方和为1
         # comb = comb / row_norms
         # print('update===normalized comb:{}, shape:{}'.format(comb, comb.shape))
-        nor = torch.sqrt(torch.sum(torch.mul(comb, comb), axis=1))
-        print('update===nor:{}'.format(nor))
-        nor = nor.unsqueeze(axis=-1)
-        print('update===unsqueeze nor:{}'.format(nor))
-        comp1 = torch.ones(comb.size(), device=device)
-        print('update===comp1:{}'.format(comp1))
-        comb = torch.div(comb, torch.max(comp1, nor))
-        print('update===comb:{}'.format(comb))
+        # nor = torch.sqrt(torch.sum(torch.mul(comb, comb), axis=1))
+        # print('update===nor:{}'.format(nor))
+        # nor = nor.unsqueeze(axis=-1)
+        # print('update===unsqueeze nor:{}'.format(nor))
+        # comp1 = torch.ones(comb.size(), device=device)
+        # print('update===comp1:{}'.format(comp1))
+        # comb = torch.div(comb, torch.max(comp1, nor))
+        # print('update===comb:{}'.format(comb))
         # comb_res = torch.cat([add_delta_delay, comb], dim=1)
         # print('update===comb_res:{}'.format(comb_res))
         # return torch.cat([comb_res, x[:, :2 * Nt - 1]], dim=1)
