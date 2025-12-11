@@ -230,7 +230,7 @@ def CSI_generate_new(general_para, distances):
     dists = np.expand_dims(distances,axis=-1)
     shadowing = np.random.randn(L,L,Nt)
     # print('dists:{}, shadowing:{}'.format(dists, shadowing))
-    large_scale_CSI = 4.4*10**5/((1**1.88)*(10**(shadowing*6.3/20)))
+    large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
     # small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt))*np.sqrt(large_scale_CSI)
     small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(L,L,Nt)+1j*np.random.randn(L,L,Nt))*np.sqrt(large_scale_CSI)
     # small_scale_CSI_new = np.random.randn(L,L,Nt)+1j*np.random.randn(L,L,Nt)
