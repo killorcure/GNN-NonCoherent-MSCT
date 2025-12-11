@@ -1821,7 +1821,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     #         if mode_square_sum > 1:
     #             p3[i, j:j + users, :, :] = torch.div(p3[i, j:j+users, :, :], torch.sqrt(mode_square_sum))
     # print('sr_loss===power control complex p3:{}, size:{}'.format(p3, p3.shape))
-    H4 = H3.conj()
+    H4 = H3
     # print('sr_loss===H4:{}, size:{}'.format(H4, H4.shape))
     H_new = torch.clone(H3)
     # H_new_conj = H_new.conj()
@@ -1832,7 +1832,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
         phase_error = torch.normal(0, sigma, size=phase.shape).cuda()
         new_phase = phase_error + phase
         H_new = mod * torch.exp(1j*new_phase)
-        H_new_conj = H_new.conj()
+        H_new_conj = H_new
         rx_all_power = torch.mul(H_new_conj, p3_norm)
     else:
         rx_all_power = torch.mul(H4, p3_norm)
