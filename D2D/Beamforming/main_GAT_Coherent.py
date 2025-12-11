@@ -1794,29 +1794,6 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     p3 = torch.complex(p1, p2)
     p3_norm = p3
 
-    rx_power1 = torch.mul(H1, p1)
-    rx_power1 = torch.sum(rx_power1, axis=-1)
-
-    rx_power2 = torch.mul(H2, p2)
-    rx_power2 = torch.sum(rx_power2, axis=-1)
-
-    rx_power3 = torch.mul(H1, p2)
-    rx_power3 = torch.sum(rx_power3, axis=-1)
-
-    rx_power4 = torch.mul(H2, p1)
-    rx_power4 = torch.sum(rx_power4, axis=-1)
-
-    rx_power = torch.mul(rx_power1 - rx_power2, rx_power1 - rx_power2) + torch.mul(rx_power3 + rx_power4,
-                                                                                   rx_power3 + rx_power4)
-    mask = torch.eye(users*train_S, device=device)
-    valid_rx_power = torch.sum(torch.mul(rx_power, mask), axis=1)
-    interference = torch.sum(torch.mul(rx_power, 1 - mask), axis=1)
-    noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
-    sum_rate = torch.mean(torch.sum(rate, axis=1))
-    loss = torch.neg(sum_rate)
-    return loss
-
     # # p3 = p_all.detach()
     # # p3 = p3_new.clone()  # 复制 p3 的一份副本
     # num_groups = K // users
@@ -1892,9 +1869,6 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     rate_iter_asyn_no_add = torch.empty(0).cuda()
     rate_iter_asyn_add = torch.empty(0).cuda()
 
-
-
-
     for iter in range(rx_all_power.shape[0]):
         rate_syn = torch.zeros(1).cuda()
         rate_asyn_no_add = torch.zeros(1).cuda()
@@ -1947,6 +1921,28 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     elif add_mode == 2:
         loss = torch.neg(avr_rate_syn)
     # print('sr_loss===loss:{}'.format(loss))
+
+    rx_power1 = torch.mul(H1, p1)
+    rx_power1 = torch.sum(rx_power1, axis=-1)
+
+    rx_power2 = torch.mul(H2, p2)
+    rx_power2 = torch.sum(rx_power2, axis=-1)
+
+    rx_power3 = torch.mul(H1, p2)
+    rx_power3 = torch.sum(rx_power3, axis=-1)
+
+    rx_power4 = torch.mul(H2, p1)
+    rx_power4 = torch.sum(rx_power4, axis=-1)
+
+    rx_power_final = torch.mul(rx_power1 - rx_power2, rx_power1 - rx_power2) + torch.mul(rx_power3 + rx_power4,
+                                                                                   rx_power3 + rx_power4)
+    mask = torch.eye(users*train_S, device=device)
+    valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
+    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
+    noise = valid_rx_power / (10 ** (SNR_dB / 10))
+    rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
+    sum_rate = torch.mean(torch.sum(rate, axis=1))
+    loss = torch.neg(sum_rate)
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
            syn_wmmse_rate, asyn_wmmse_rate_noadd, asyn_wmmse_rate, wmmse_exec_time, \
            syn_mmse_rate, asyn_mmse_rate_noadd, asyn_mmse_rate, \
