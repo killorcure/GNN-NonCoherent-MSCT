@@ -819,8 +819,8 @@ class IGConv(MessagePassing):
         # 用注意力系数加权消息
         weighted_agg = alpha * agg  # [E, D_msg]
         # weighted_agg = agg
-        return weighted_agg  # MessagePassing 会按 self.aggr 聚合这些消息
-        # return agg
+        # return weighted_agg  # MessagePassing 会按 self.aggr 聚合这些消息
+        return agg
 
 
     def __repr__(self):
