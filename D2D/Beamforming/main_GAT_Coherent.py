@@ -456,7 +456,7 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
     print('dist2_1:{}'.format(dist2))
 
     dist2 = np.copy(dist)
-    mask = np.eye(K)
+    mask = np.eye(users*train_S)
     diag_dist = np.multiply(mask, dist2)
     dist2 = dist2 + 100000 * diag_dist
     dist2[dist2 > 10000] = 0
