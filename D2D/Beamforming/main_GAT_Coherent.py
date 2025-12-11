@@ -792,44 +792,44 @@ class IGConv(MessagePassing):
         agg = self.mlp1(tmp)
         # print('message tmp:{}'.format(tmp))
         print('message agg:{}, size:{}'.format(agg, agg.shape))
-        # ---- multi-head attention score 计算（基于 x_i, x_j, edge_attr） ----
-        # att_input = torch.cat([x_i, edge_attr], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
-        # att_input = torch.cat([x_i, x_j], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
-        att_input = torch.cat([x_j], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
-        print('message att_input:{}, size:{}'.format(att_input, att_input.shape))
-        print('message att_lin:{}'.format(self.att_lin))
-        scores = self.att_lin(att_input)  # [E, heads]
-        edge_weight = self.edge_mlp(edge_attr)
-        # scores = scores - self.beta * edge_weight
-        scores = scores
-        # scores = scores * edge_weight
-        print('message scores:{}, size:{}'.format(scores, scores.shape))
-        scores = F.leaky_relu(scores, negative_slope=self.leaky_slope)
-        print('message leaky_relu scores:{}, size:{}'.format(scores, scores.shape))
-        # 对每个 head 在接收节点上进行 softmax 归一化（按 head 列分别做 softmax）
-        # softmax 函数支持对矩阵进行 softmax(row) by index, 但需对 heads 单独处理
-        # 我们对 heads 维度逐列做 softmax，然后把 heads 的系数平均成单个 alpha
-        # 下面实现：对每个 head 计算 alpha_h = softmax(scores[:, h], index)
-        alphas = []
-        for h in range(self.heads):
-            alpha_h = softmax(scores[:, h], index)  # [E]
-            alphas.append(alpha_h)
-        # stack -> [E, heads]
-        alphas = torch.stack(alphas, dim=1)
-        print('message alpha.stack:{}, size:{}'.format(alphas, alphas.shape))
-        # 可选 dropout on attention
-        if self.att_dropout > 0 and self.training:
-            alphas = F.dropout(alphas, p=self.att_dropout, training=True)
-
-        # combine heads into single scalar per edge (这里取平均)
-        alpha = torch.mean(alphas, dim=1, keepdim=True)  # [E]
-        print('message alpha.mean:{}, size:{}'.format(alpha, alpha.shape))
-        # alpha = alpha.unsqueeze(-1)  # [E, 1]
-        print('message alpha.unsqueeze:{}, size:{}'.format(alpha, alpha.shape))
-        # 用注意力系数加权消息
-        weighted_agg = alpha * agg  # [E, D_msg]
-        # weighted_agg = agg
-        # return weighted_agg  # MessagePassing 会按 self.aggr 聚合这些消息
+        # # ---- multi-head attention score 计算（基于 x_i, x_j, edge_attr） ----
+        # # att_input = torch.cat([x_i, edge_attr], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
+        # # att_input = torch.cat([x_i, x_j], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
+        # att_input = torch.cat([x_j], dim=1)  # [E, 2*node_feat_dim + edge_feat_dim]
+        # print('message att_input:{}, size:{}'.format(att_input, att_input.shape))
+        # print('message att_lin:{}'.format(self.att_lin))
+        # scores = self.att_lin(att_input)  # [E, heads]
+        # edge_weight = self.edge_mlp(edge_attr)
+        # # scores = scores - self.beta * edge_weight
+        # scores = scores
+        # # scores = scores * edge_weight
+        # print('message scores:{}, size:{}'.format(scores, scores.shape))
+        # scores = F.leaky_relu(scores, negative_slope=self.leaky_slope)
+        # print('message leaky_relu scores:{}, size:{}'.format(scores, scores.shape))
+        # # 对每个 head 在接收节点上进行 softmax 归一化（按 head 列分别做 softmax）
+        # # softmax 函数支持对矩阵进行 softmax(row) by index, 但需对 heads 单独处理
+        # # 我们对 heads 维度逐列做 softmax，然后把 heads 的系数平均成单个 alpha
+        # # 下面实现：对每个 head 计算 alpha_h = softmax(scores[:, h], index)
+        # alphas = []
+        # for h in range(self.heads):
+        #     alpha_h = softmax(scores[:, h], index)  # [E]
+        #     alphas.append(alpha_h)
+        # # stack -> [E, heads]
+        # alphas = torch.stack(alphas, dim=1)
+        # print('message alpha.stack:{}, size:{}'.format(alphas, alphas.shape))
+        # # 可选 dropout on attention
+        # if self.att_dropout > 0 and self.training:
+        #     alphas = F.dropout(alphas, p=self.att_dropout, training=True)
+        #
+        # # combine heads into single scalar per edge (这里取平均)
+        # alpha = torch.mean(alphas, dim=1, keepdim=True)  # [E]
+        # print('message alpha.mean:{}, size:{}'.format(alpha, alpha.shape))
+        # # alpha = alpha.unsqueeze(-1)  # [E, 1]
+        # print('message alpha.unsqueeze:{}, size:{}'.format(alpha, alpha.shape))
+        # # 用注意力系数加权消息
+        # weighted_agg = alpha * agg  # [E, D_msg]
+        # # weighted_agg = agg
+        # # return weighted_agg  # MessagePassing 会按 self.aggr 聚合这些消息
         return agg
 
 
