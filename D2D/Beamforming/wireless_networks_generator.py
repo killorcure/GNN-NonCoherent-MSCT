@@ -74,7 +74,8 @@ def distance_generate_new(general_para, layout_tx, layout_rx):
     satellite_num = general_para.satellite_num
     user_num = general_para.user_num
     L = general_para.n_receiver
-    distances_new = 500+np.random.rand(satellite_num, user_num)*500
+    # distances_new = 500+np.random.rand(satellite_num, user_num)*500
+    distances_new = 500 + np.random.rand(L, L) * 500
     # final_distance_new = np.random.randn(L, L)
     # for i in range(L):
     #     for j in range(L):
