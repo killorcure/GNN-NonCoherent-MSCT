@@ -608,7 +608,7 @@ class IGConv(MessagePassing):
         print('update===x:{}, size:{}'.format(x, x.shape))
         tmp = torch.cat([x, aggr_out], dim=1)
         comb_all = self.mlp2(tmp)
-        print('update===comb_all:{}'.format(comb))
+        print('update===comb_all:{}'.format(comb_all))
         comb = comb_all[:, 1:2 * Nt + 1] # w
         # comb = comb_all[:, 0:2 * Nt] # w
         # links_res = comb_all[:, 0:1] # alpha
