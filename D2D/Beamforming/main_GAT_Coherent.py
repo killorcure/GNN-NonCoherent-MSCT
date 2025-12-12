@@ -627,7 +627,7 @@ class IGConv(MessagePassing):
         # square_sum = square_sum
         square_sum[square_sum <= 1] = 1
         # square_sum[square_sum > 100] = 100
-        comb_normalized = 0.4*comb_group / torch.sqrt(square_sum)
+        comb_normalized = comb_group / torch.sqrt(square_sum)
         comb = comb_normalized.view(comb.shape[0], 2*Nt)
 
         # row_norms = torch.norm(comb, p=2, dim=1, keepdim=True)  # 计算每行的L2范数
@@ -1569,9 +1569,9 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     #                                                                                rx_power3 + rx_power4)
     # mask = torch.eye(users*train_S, device=device)
     # valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
-    # interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)+1
+    # interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
     # # noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    # rate = torch.log2(1 + torch.div(valid_rx_power, interference))
+    # rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
     # sum_rate = torch.mean(torch.sum(rate, axis=1))
     # loss = torch.neg(sum_rate)
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
