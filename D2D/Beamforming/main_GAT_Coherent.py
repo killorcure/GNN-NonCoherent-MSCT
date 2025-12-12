@@ -1548,16 +1548,16 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     #     rate_iter_asyn_no_add = torch.cat((rate_iter_asyn_no_add, rate_asyn_no_add.view(1)))
     #     rate_iter_asyn_add = torch.cat((rate_iter_asyn_add, rate_asyn_add.view(1)))
     #     print('sr_loss===iter: {} rate_iter_syn:{}, rate_iter_asyn_no_add:{}, rate_iter_asyn_add:{}'.format(iter, rate_iter_syn, rate_iter_asyn_no_add, rate_iter_asyn_add))
-    avr_rate_syn = torch.mean(rate_iter_syn)
-    avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
-    avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
-    print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
-    if add_mode == 1:
-        loss = torch.neg(avr_rate_asyn_add)
-    elif add_mode == 0:
-        loss = torch.neg(avr_rate_asyn_no_add)
-    elif add_mode == 2:
-        loss = torch.neg(avr_rate_syn)
+    # avr_rate_syn = torch.mean(rate_iter_syn)
+    # avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
+    # avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
+    # print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
+    # if add_mode == 1:
+    #     loss = torch.neg(avr_rate_asyn_add)
+    # elif add_mode == 0:
+    #     loss = torch.neg(avr_rate_asyn_no_add)
+    # elif add_mode == 2:
+    #     loss = torch.neg(avr_rate_syn)
     # print('sr_loss===loss:{}'.format(loss))
 
     rx_power1 = torch.mul(H1, p1)
