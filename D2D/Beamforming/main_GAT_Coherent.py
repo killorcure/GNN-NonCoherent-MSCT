@@ -1480,7 +1480,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     print('sr_loss===calculate_eta_one no_add_eta_all:{}, size:{}'.format(no_add_eta_all, no_add_eta_all.shape))
     add_delay = add_delta_delay.squeeze(2).unsqueeze(2)-add_delta_delay.squeeze(2).unsqueeze(1)
     print('sr_loss===add_delay:{}, size:{}'.format(add_delay, add_delay.shape))
-    add_eta_all = calculate_eta_one(add_delay)
+    add_eta_all = calculate_eta_one(add_delay.squeeze(3))
     print('sr_loss===calculate_eta_one add_eta_all:{}, size:{}'.format(add_eta_all, add_eta_all.shape))
     asyn_wmmse_rate = 0
     asyn_wmmse_rate_noadd = 0
