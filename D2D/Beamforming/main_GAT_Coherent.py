@@ -1479,9 +1479,9 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     print('sr_loss===change_add_delta_delay: {} size:{}'.format(change_add_delta_delay, change_add_delta_delay.shape))
     no_add_eta_all = calculate_eta_one(initial_delay.squeeze(3))
     print('sr_loss===calculate_eta_one no_add_eta_all:{}, size:{}'.format(no_add_eta_all, no_add_eta_all.shape))
-    change_add_delay = (change_add_delta_delay.unsqueeze(2)-change_add_delta_delay.unsqueeze(1))
-    print('sr_loss===change_add_delay:{} 100*add_delay:{}, size:{}'.format(change_add_delay, 100*change_add_delay, change_add_delay.shape))
-    add_eta_all = calculate_eta_one(100*change_add_delay)
+    change_add_delay = 100*(change_add_delta_delay.unsqueeze(2)-change_add_delta_delay.unsqueeze(1))
+    print('sr_loss===change_add_delay:{}, size:{}'.format(change_add_delay, change_add_delay.shape))
+    add_eta_all = calculate_eta_one(change_add_delay)
     print('sr_loss===calculate_eta_one add_eta_all:{}, size:{}'.format(add_eta_all, add_eta_all.shape))
     asyn_wmmse_rate = 0
     asyn_wmmse_rate_noadd = 0
@@ -1610,7 +1610,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
 
 
 def calculate_eta_one(Delta_1):
-    beta = 0.2
+    beta = 1
     return 1-0.25*beta+0.25*beta*torch.cos(2*torch.pi*Delta_1)
     # if Delta_1 == Delta_2:
     #     return 1-0.5*beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2)
