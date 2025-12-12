@@ -1404,7 +1404,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     # links = p[:, 0:1]
     add_delta_delay = p[:, 0:1]
     # add_delta_delay = torch.sigmoid(add_delta_delay/0.5) #
-    # print('sr_loss===add_delta_delay sigmoid: {} sizez:{}'.format(add_delta_delay, add_delta_delay.shape))
+    print('sr_loss===add_delta_delay: {} sizez:{}'.format(add_delta_delay, add_delta_delay.shape))
     add_delta_delay = torch.reshape(add_delta_delay, (-1, K, 1, 1))
     # links = update_links(links)
     # p1 = p[:, :N]
