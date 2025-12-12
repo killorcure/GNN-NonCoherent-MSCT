@@ -1580,17 +1580,17 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
     interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
     noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    rate = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
-    avr_rate_syn = torch.mean(torch.sum(rate, axis=1))
+    rate_syn = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
+    avr_rate_syn = torch.mean(torch.sum(rate_syn, axis=1))
 
-    rx_power_final = torch.mul(rx_power_final, add_eta_all)
+    rx_power_final_add = torch.mul(rx_power_final, add_eta_all)
     print('sr_loss===compute rx_power_final with eta: {}, size: {}'.format(rx_power_final, rx_power_final.shape))
     mask = torch.eye(users*train_S, device=device)
-    valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
-    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
+    valid_rx_power = torch.sum(torch.mul(rx_power_final_add, mask), axis=1)
+    interference = torch.sum(torch.mul(rx_power_final_add, 1 - mask), axis=1)
     noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
-    avr_rate_asyn_add = torch.mean(torch.sum(rate, axis=1))
+    rate_add = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
+    avr_rate_asyn_add = torch.mean(torch.sum(rate_add, axis=1))
     loss = torch.neg(avr_rate_asyn_add)
 
     rx_power_final_no_add = torch.mul(rx_power_final, no_add_eta_all)
@@ -1599,8 +1599,8 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     valid_rx_power = torch.sum(torch.mul(rx_power_final_no_add, mask), axis=1)
     interference = torch.sum(torch.mul(rx_power_final_no_add, 1 - mask), axis=1)
     noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    rate = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
-    avr_rate_asyn_no_add = torch.mean(torch.sum(rate, axis=1))
+    rate_no_add = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
+    avr_rate_asyn_no_add = torch.mean(torch.sum(rate_no_add, axis=1))
 
 
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
