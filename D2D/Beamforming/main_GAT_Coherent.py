@@ -1473,7 +1473,7 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     print('sr_loss===sum rx_all_power:{}, size:{}'.format(rx_all_power, rx_all_power.shape))
     initial_delay = data.initial_delay
     # print('sr_loss===initial_delay:{}, size:{}'.format(initial_delay, initial_delay.shape))
-    initial_delay = 0.1*torch.reshape(initial_delay, (-1, K, K, 1))
+    initial_delay = torch.reshape(initial_delay, (-1, K, K, 1))
     print('sr_loss===reshape initial_delay:{}, size:{}'.format(initial_delay, initial_delay.shape))
     change_add_delta_delay = add_delta_delay.squeeze(2).squeeze(2)
     print('sr_loss===change_add_delta_delay: {} size:{}'.format(change_add_delta_delay, change_add_delta_delay.shape))
