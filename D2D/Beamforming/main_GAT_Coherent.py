@@ -1476,6 +1476,12 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     initial_delay = torch.reshape(initial_delay, (-1, K, K, 1))
     print('sr_loss===reshape initial_delay:{}, size:{}'.format(initial_delay, initial_delay.shape))
     print('sr_loss===add_delta_delay: {} sizez:{}'.format(add_delta_delay, add_delta_delay.shape))
+    no_add_eta_all = calculate_eta_one(initial_delay.squeeze(2))
+    print('sr_loss===calculate_eta_one no_add_eta_all:{}, size:{}'.format(no_add_eta_all, no_add_eta_all.shape))
+    add_delay = initial_delay.squeeze(2).unsqueeze(2)-initial_delay.squeeze(2).unsqueeze(1)
+    print('sr_loss===add_delay:{}, size:{}'.format(add_delay, add_delay.shape))
+    add_eta_all = calculate_eta_one(add_delay)
+    print('sr_loss===calculate_eta_one add_eta_all:{}, size:{}'.format(add_eta_all, add_eta_all.shape))
     asyn_wmmse_rate = 0
     asyn_wmmse_rate_noadd = 0
     syn_wmmse_rate = 0
@@ -1553,27 +1559,30 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
         loss = torch.neg(avr_rate_syn)
     # print('sr_loss===loss:{}'.format(loss))
 
-    # rx_power1 = torch.mul(H1, p1)
-    # rx_power1 = torch.sum(rx_power1, axis=-1)
-    #
-    # rx_power2 = torch.mul(H2, p2)
-    # rx_power2 = torch.sum(rx_power2, axis=-1)
-    #
-    # rx_power3 = torch.mul(H1, p2)
-    # rx_power3 = torch.sum(rx_power3, axis=-1)
-    #
-    # rx_power4 = torch.mul(H2, p1)
-    # rx_power4 = torch.sum(rx_power4, axis=-1)
-    #
-    # rx_power_final = torch.mul(rx_power1 - rx_power2, rx_power1 - rx_power2) + torch.mul(rx_power3 + rx_power4,
-    #                                                                                rx_power3 + rx_power4)
-    # mask = torch.eye(users*train_S, device=device)
-    # valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
-    # interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
-    # # noise = valid_rx_power / (10 ** (SNR_dB / 10))
-    # rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
-    # sum_rate = torch.mean(torch.sum(rate, axis=1))
-    # loss = torch.neg(sum_rate)
+    rx_power1 = torch.mul(H1, p1)
+    rx_power1 = torch.sum(rx_power1, axis=-1)
+
+    rx_power2 = torch.mul(H2, p2)
+    rx_power2 = torch.sum(rx_power2, axis=-1)
+
+    rx_power3 = torch.mul(H1, p2)
+    rx_power3 = torch.sum(rx_power3, axis=-1)
+
+    rx_power4 = torch.mul(H2, p1)
+    rx_power4 = torch.sum(rx_power4, axis=-1)
+
+    rx_power_final = torch.mul(rx_power1 - rx_power2, rx_power1 - rx_power2) + torch.mul(rx_power3 + rx_power4,
+                                                                                   rx_power3 + rx_power4)
+    print('sr_loss===compute rx_power_final: {}, size: {}, eta_add:{}'.format(rx_power_final, rx_power_final.shape, eta_add))
+    rx_power_final = torch.mul(rx_power_final, add_eta_all)
+    print('sr_loss===compute rx_power_final with eta: {}, size: {}'.format(rx_power_final, rx_power_final.shape))
+    mask = torch.eye(users*train_S, device=device)
+    valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
+    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
+    noise = valid_rx_power / (10 ** (SNR_dB / 10))
+    rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
+    sum_rate = torch.mean(torch.sum(rate, axis=1))
+    loss = torch.neg(sum_rate)
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
            syn_wmmse_rate, asyn_wmmse_rate_noadd, asyn_wmmse_rate, wmmse_exec_time, \
            syn_mmse_rate, asyn_mmse_rate_noadd, asyn_mmse_rate, \
