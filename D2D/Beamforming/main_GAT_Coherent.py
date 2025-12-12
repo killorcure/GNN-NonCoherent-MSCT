@@ -1475,12 +1475,13 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     # print('sr_loss===initial_delay:{}, size:{}'.format(initial_delay, initial_delay.shape))
     initial_delay = torch.reshape(initial_delay, (-1, K, K, 1))
     print('sr_loss===reshape initial_delay:{}, size:{}'.format(initial_delay, initial_delay.shape))
-    print('sr_loss===add_delta_delay: {} sizez:{}'.format(add_delta_delay, add_delta_delay.shape))
+    change_add_delta_delay = add_delta_delay.squeeze(2).squeeze(2)
+    print('sr_loss===change_add_delta_delay: {} size:{}'.format(change_add_delta_delay, change_add_delta_delay.shape))
     no_add_eta_all = calculate_eta_one(initial_delay.squeeze(2))
     print('sr_loss===calculate_eta_one no_add_eta_all:{}, size:{}'.format(no_add_eta_all, no_add_eta_all.shape))
-    add_delay = add_delta_delay.squeeze(2).unsqueeze(2)-add_delta_delay.squeeze(2).unsqueeze(1)
-    print('sr_loss===add_delay:{}, size:{}'.format(add_delay, add_delay.shape))
-    add_eta_all = calculate_eta_one(add_delay.squeeze(3))
+    change_add_delay = change_add_delta_delay.unsqueeze(2)-change_add_delta_delay.unsqueeze(1)
+    print('sr_loss===change_add_delay:{}, size:{}'.format(change_add_delay, change_add_delay.shape))
+    add_eta_all = calculate_eta_one(change_add_delay)
     print('sr_loss===calculate_eta_one add_eta_all:{}, size:{}'.format(add_eta_all, add_eta_all.shape))
     asyn_wmmse_rate = 0
     asyn_wmmse_rate_noadd = 0
