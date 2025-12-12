@@ -1493,19 +1493,19 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     asyn_zf_rate_noadd = 0
     syn_zf_rate = 0
     wmmse_exec_time = 0
-    # if only_GNN == 0 and (epoch == 1 or (epoch == Epoches-1)):
-    #     start_wmmse = time.time()
-    #     print('sr_loss===start to compute async_WMMSE and sync_WMMSE')
-    #     asyn_wmmse_rate, asyn_mmse_rate, asyn_zf_rate = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 1, 1)
-    #     asyn_wmmse_rate_noadd, asyn_mmse_rate_noadd, asyn_zf_rate_noadd = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 1, 0)
-    #     syn_wmmse_rate, syn_mmse_rate, syn_zf_rate = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 0, 0)
-    #     end_wmmse = time.time()
-    #     wmmse_exec_time = (end_wmmse - start_wmmse) / 3
-    #     print('sr_loss===end to compute async_WMMSE and sync_WMMSE with time: {}'.format(wmmse_exec_time))
-    # # rx_all_power_1 = torch.abs(rx_all_power)**2
-    # rate_iter_syn = torch.empty(0).cuda()
-    # rate_iter_asyn_no_add = torch.empty(0).cuda()
-    # rate_iter_asyn_add = torch.empty(0).cuda()
+    if only_GNN == 0 and (epoch == 1 or (epoch == Epoches-1)):
+        start_wmmse = time.time()
+        print('sr_loss===start to compute async_WMMSE and sync_WMMSE')
+        asyn_wmmse_rate, asyn_mmse_rate, asyn_zf_rate = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 1, 1)
+        asyn_wmmse_rate_noadd, asyn_mmse_rate_noadd, asyn_zf_rate_noadd = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 1, 0)
+        syn_wmmse_rate, syn_mmse_rate, syn_zf_rate = compute_asyn_wmmse(H3, H_new, p3_norm, initial_delay, add_delta_delay, 0, 0)
+        end_wmmse = time.time()
+        wmmse_exec_time = (end_wmmse - start_wmmse) / 3
+        print('sr_loss===end to compute async_WMMSE and sync_WMMSE with time: {}'.format(wmmse_exec_time))
+    # rx_all_power_1 = torch.abs(rx_all_power)**2
+    rate_iter_syn = torch.empty(0).cuda()
+    rate_iter_asyn_no_add = torch.empty(0).cuda()
+    rate_iter_asyn_add = torch.empty(0).cuda()
     #
     # for iter in range(rx_all_power.shape[0]):
     #     rate_syn = torch.zeros(1).cuda()
@@ -1548,17 +1548,17 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     #     rate_iter_asyn_no_add = torch.cat((rate_iter_asyn_no_add, rate_asyn_no_add.view(1)))
     #     rate_iter_asyn_add = torch.cat((rate_iter_asyn_add, rate_asyn_add.view(1)))
     #     print('sr_loss===iter: {} rate_iter_syn:{}, rate_iter_asyn_no_add:{}, rate_iter_asyn_add:{}'.format(iter, rate_iter_syn, rate_iter_asyn_no_add, rate_iter_asyn_add))
-    # avr_rate_syn = torch.mean(rate_iter_syn)
-    # avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
-    # avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
-    # print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
-    # if add_mode == 1:
-    #     loss = torch.neg(avr_rate_asyn_add)
-    # elif add_mode == 0:
-    #     loss = torch.neg(avr_rate_asyn_no_add)
-    # elif add_mode == 2:
-    #     loss = torch.neg(avr_rate_syn)
-    # # print('sr_loss===loss:{}'.format(loss))
+    avr_rate_syn = torch.mean(rate_iter_syn)
+    avr_rate_asyn_no_add = torch.mean(rate_iter_asyn_no_add)
+    avr_rate_asyn_add = torch.mean(rate_iter_asyn_add)
+    print('sr_loss===avr_rate_syn: {}, avr_rate_asyn_no_add:{} avr_rate_asyn_add:{}'.format(avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add))
+    if add_mode == 1:
+        loss = torch.neg(avr_rate_asyn_add)
+    elif add_mode == 0:
+        loss = torch.neg(avr_rate_asyn_no_add)
+    elif add_mode == 2:
+        loss = torch.neg(avr_rate_syn)
+    # print('sr_loss===loss:{}'.format(loss))
 
     rx_power1 = torch.mul(H1, p1)
     rx_power1 = torch.sum(rx_power1, axis=-1)
@@ -1575,6 +1575,14 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     rx_power_final = torch.mul(rx_power1 - rx_power2, rx_power1 - rx_power2) + torch.mul(rx_power3 + rx_power4,
                                                                                    rx_power3 + rx_power4)
     print('sr_loss===compute rx_power_final: {}, size: {}, eta_add:{}'.format(rx_power_final, rx_power_final.shape, eta_add))
+
+    mask = torch.eye(users * train_S, device=device)
+    valid_rx_power = torch.sum(torch.mul(rx_power_final, mask), axis=1)
+    interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
+    noise = valid_rx_power / (10 ** (SNR_dB / 10))
+    rate = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
+    avr_rate_syn = torch.mean(torch.sum(rate, axis=1))
+
     rx_power_final = torch.mul(rx_power_final, add_eta_all)
     print('sr_loss===compute rx_power_final with eta: {}, size: {}'.format(rx_power_final, rx_power_final.shape))
     mask = torch.eye(users*train_S, device=device)
@@ -1582,8 +1590,19 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     interference = torch.sum(torch.mul(rx_power_final, 1 - mask), axis=1)
     noise = valid_rx_power / (10 ** (SNR_dB / 10))
     rate = torch.log2(1 + torch.div(valid_rx_power, interference+noise))
-    sum_rate = torch.mean(torch.sum(rate, axis=1))
-    loss = torch.neg(sum_rate)
+    avr_rate_asyn_add = torch.mean(torch.sum(rate, axis=1))
+    loss = torch.neg(avr_rate_asyn_add)
+
+    rx_power_final_no_add = torch.mul(rx_power_final, no_add_eta_all)
+    print('sr_loss===compute rx_power_final with eta: {}, size: {}'.format(rx_power_final, rx_power_final.shape))
+    mask = torch.eye(users * train_S, device=device)
+    valid_rx_power = torch.sum(torch.mul(rx_power_final_no_add, mask), axis=1)
+    interference = torch.sum(torch.mul(rx_power_final_no_add, 1 - mask), axis=1)
+    noise = valid_rx_power / (10 ** (SNR_dB / 10))
+    rate = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
+    avr_rate_asyn_no_add = torch.mean(torch.sum(rate, axis=1))
+
+
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
            syn_wmmse_rate, asyn_wmmse_rate_noadd, asyn_wmmse_rate, wmmse_exec_time, \
            syn_mmse_rate, asyn_mmse_rate_noadd, asyn_mmse_rate, \
