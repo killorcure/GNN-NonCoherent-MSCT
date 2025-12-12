@@ -612,8 +612,8 @@ class IGConv(MessagePassing):
         comb = comb_all[:, 1:2 * Nt + 1] # w
         # comb = comb_all[:, 0:2 * Nt] # w
         # links_res = comb_all[:, 0:1] # alpha
-        add_delta_delay = comb[:, 0:1] # tau_c
-        add_delta_delay = torch.sigmoid(add_delta_delay)
+        add_delta_delay = comb_all[:, 0:1] # tau_c
+        # add_delta_delay = torch.sigmoid(add_delta_delay)
         # add_delta_delay = torch.sigmoid(add_delta_delay/0.5)
         # links_onehot = update_links(links_res)
         # links_onehot = links_res
