@@ -264,7 +264,7 @@ def Delay_generate(general_para, distances): ##单天线 这里要改成对应�
     L = general_para.n_receiver
     satellite_num = general_para.satellite_num
     user_num = general_para.user_num
-    delay = 0.5*np.random.rand(satellite_num,user_num)
+    delay = 0.7*np.random.rand(satellite_num,user_num)
     print('delays generate:{}'.format(delay))
     # for m in range(satellite_num):
     #     for n in range(user_num):
