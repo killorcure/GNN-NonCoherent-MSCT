@@ -1582,6 +1582,8 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     noise = valid_rx_power / (10 ** (SNR_dB / 10))
     rate_syn = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
     avr_rate_syn = torch.mean(torch.sum(rate_syn, axis=1))
+    print('sr_loss===compute valid_rx_power: {}, interference: {}, noise:{}'.format(valid_rx_power, interference, noise))
+
 
     rx_power_final_add = torch.mul(rx_power_final, add_eta_all)
     print('sr_loss===compute rx_power_final with eta: {}, size: {}'.format(rx_power_final, rx_power_final.shape))
