@@ -1689,7 +1689,7 @@ def train(epoch):
         print('train====out:{}'.format(out))
         loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, sync_wmmse_rate, asyn_wmmse_rate_noadd, \
         async_wmmse_rate, wmmse_time, syn_mmse_rate, asyn_mmse_rate_noadd, asyn_mmse_rate, \
-        syn_zf_rate, asyn_zf_rate_noadd, asyn_zf_rate = sr_loss_all_test(data, out, train_K, Nt, epoch, 0, 1)
+        syn_zf_rate, asyn_zf_rate_noadd, asyn_zf_rate = sr_loss_all_test(data, out, train_K, Nt, epoch, imperfect_channel_estimation, train_mode)
         # loss_imperfect, avr_rate_syn_imperfect, avr_rate_asyn_no_add_imperfect, avr_rate_asyn_add_imperfect, \
         # sync_wmmse_rate_imperfect, asyn_wmmse_rate_noadd_imperfect, async_wmmse_rate_imperfect, \
         # wmmse_time_imperfect, sync_mmse_rate_imperfect, asyn_mmse_rate_noadd_imperfect, async_mmse_rate_imperfect,\
@@ -1881,6 +1881,8 @@ SNR_dB = 10
 # Nt = 16  ## 每个波束的发射天线数
 Nt = 2  ## 每个波束的发射天线数
 only_GNN = 1
+train_mode = 1  # 0: sync 1: add_delta 2: no_add_delta
+imperfect_channel_estimation = 0  # 0: perfect 1: imperfect
 Epoches = 100
 generate_data = 1
 # imperfect_channel_condition = 1
