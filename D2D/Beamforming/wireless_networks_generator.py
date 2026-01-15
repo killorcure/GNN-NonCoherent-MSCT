@@ -277,7 +277,7 @@ def Delay_generate(general_para, distances): ##单天线 这里要改成对应�
             satellite_to_index = int(j / user_num)
             user_from_index = int(i % user_num)
             user_to_index = int(j % user_num)
-            delays_sample[i,j] = delay[satellite_to_index, user_to_index] - delay[satellite_from_index, user_from_index]
+            delays_sample[i,j] = delay[satellite_from_index, user_to_index] - delay[satellite_from_index, user_from_index]
     # delays_sample = np.triu(delays_sample, k=1)
     # delays = delays_sample - delays_sample.T
     # large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
@@ -296,7 +296,7 @@ def Delay_generate(general_para, distances): ##单天线 这里要改成对应�
             if i == j:
                 eta_sample[i, j] = 0
             else:
-                eta_sample[i, j] = calculate_eta(left_delta_delay, right_delta_delay)
+                eta_sample[i, j] = calculate_eta_one(delay[i,j])
     # print('small_scale_CSI:{}'.format(small_scale_CSI))
     return delays_sample, eta_sample
 
@@ -309,6 +309,17 @@ def calculate_eta(Delta_1, Delta_2):
                          1-4*beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1))*np.sinc(Delta_2-Delta_1) + np.divide(
             beta*np.sin(np.pi*Delta_1)*np.sin(np.pi*Delta_2),
             2*(beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1)-1))*np.sinc((Delta_2-Delta_1)*beta)
+
+def calculate_eta_one(Delta_1):
+    beta = 1
+    return 1-0.25*beta+0.25*beta*np.cos(2*np.pi*Delta_1)
+    # if Delta_1 == Delta_2:
+    #     return 1-0.5*beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2)
+    # else:
+    #     return torch.div(torch.cos(torch.pi*(Delta_2-Delta_1)*beta),
+    #                      1-4*beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1))*torch.sinc(Delta_2-Delta_1) + torch.div(
+    #         beta*torch.sin(torch.pi*Delta_1)*torch.sin(torch.pi*Delta_2),
+    #         2*(beta*beta*(Delta_2-Delta_1)*(Delta_2-Delta_1)-1))*torch.sinc((Delta_2-Delta_1)*beta)
 
 def Delay_generate_single_connection(general_para, distances): ##单天线 这里要改成对应的星地信道
     # Nt = general_para.N_antennas
