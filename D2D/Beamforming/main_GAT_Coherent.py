@@ -1604,6 +1604,12 @@ def sr_loss_all_test(data, p, K, N, epoch, imperfect_channel, add_mode):
     rate_no_add = torch.log2(1 + torch.div(valid_rx_power, interference + noise))
     avr_rate_asyn_no_add = torch.mean(torch.sum(rate_no_add, axis=1))
 
+    if add_mode == 1:
+        loss = torch.neg(avr_rate_asyn_add)
+    elif add_mode == 2:
+        loss = torch.neg(avr_rate_asyn_no_add)
+    elif add_mode == 0:
+        loss = torch.neg(avr_rate_syn)
 
     return loss, avr_rate_syn, avr_rate_asyn_no_add, avr_rate_asyn_add, \
            syn_wmmse_rate, asyn_wmmse_rate_noadd, asyn_wmmse_rate, wmmse_exec_time, \
