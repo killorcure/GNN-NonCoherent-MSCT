@@ -286,17 +286,17 @@ def Delay_generate(general_para, distances): ##单天线 这里要改成对应�
     print('delays:{}'.format(delays_sample))
     for i in range(L):
         for j in range(L):
-            satellite_from_index = int(i / user_num)
-            satellite_to_index = int(j / user_num)
-            user_from_index = int(i % user_num)
-            user_to_index = int(j % user_num)
+            # satellite_from_index = int(i / user_num)
+            # satellite_to_index = int(j / user_num)
+            # user_from_index = int(i % user_num)
+            # user_to_index = int(j % user_num)
             # delays_sample[i,j] = delay[satellite_to_index, user_to_index] - delay[satellite_from_index, user_from_index]
-            left_delta_delay = delay[satellite_to_index, user_to_index] - delay[satellite_to_index, user_from_index]
-            right_delta_delay = delay[satellite_from_index, user_to_index] - delay[satellite_from_index, user_from_index]
+            # left_delta_delay = delay[satellite_to_index, user_to_index] - delay[satellite_to_index, user_from_index]
+            # right_delta_delay = delay[satellite_from_index, user_to_index] - delay[satellite_from_index, user_from_index]
             if i == j:
                 eta_sample[i, j] = 0
             else:
-                eta_sample[i, j] = calculate_eta_one(delay[i,j])
+                eta_sample[i, j] = calculate_eta_one(delays_sample[i,j])
     # print('small_scale_CSI:{}'.format(small_scale_CSI))
     return delays_sample, eta_sample
 
