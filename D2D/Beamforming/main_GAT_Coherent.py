@@ -488,8 +488,8 @@ def build_graph_MSCT_asyn_v1(CSI, dist, delays, etas, norm_csi_real, norm_csi_im
         flag[i][0] = dist2[attr_ind[0, i], attr_ind[1, i]]
     print('flag:{}, size:{}'.format(flag, flag.shape))
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, flag, delta_delay), axis=1)
-    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, delta_delay), axis=1)
-    # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
+    # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, delta_delay), axis=1)
+    edge_attr = np.concatenate((edge_attr_real, edge_attr_imag, eta), axis=1)
     # edge_attr = np.concatenate((edge_attr_real, edge_attr_imag), axis=1)
     edge_attr = torch.tensor(edge_attr, dtype=torch.float)
     print('edge_attr:{}, size:{}'.format(edge_attr, edge_attr.shape))
