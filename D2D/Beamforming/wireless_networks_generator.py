@@ -484,7 +484,7 @@ def sample_generate_all(general_para, number_of_layouts, norm=None):
         layout_tx, layout_rx = layout_generate(general_para)
         n_re = general_para.n_receiver
         dis = distance_generate_new(general_para, layout_tx, layout_rx)
-        csis = CSI_generate_new(general_para, dis)
+        csis = CSI_generate_new2(general_para, dis)
         delay, eta = Delay_generate_v1(general_para, dis)
         # data collection
         dists.append(dis)
