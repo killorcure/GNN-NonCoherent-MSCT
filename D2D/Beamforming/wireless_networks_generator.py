@@ -293,6 +293,42 @@ def CSI_generate_new2(general_para, distances):
     print('final_CSI_new:{}'.format(final_CSI_new))
     return final_CSI_new
 
+def CSI_generate_new3(general_para, distances):
+    Nt = general_para.N_antennas
+    L = general_para.n_receiver
+    satellite_num = general_para.satellite_num
+    user_num = general_para.user_num
+    dists = np.expand_dims(distances, axis=-1)
+    shadowing = np.random.randn(L,L,Nt)
+    large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
+    # print('dists:{}, shadowing:{}'.format(dists, shadowing))
+    # large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
+    # small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt))*np.sqrt(large_scale_CSI)
+    # small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt))
+    small_scale_CSI_new = np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt)
+    # final_CSI = np.random.randn(L, L, Nt) + 1j * np.random.randn(L, L, Nt)
+    final_CSI_new = np.random.randn(L, L, Nt) + 1j * np.random.randn(L, L, Nt)
+    for i in range(satellite_num):
+        for j in range(user_num):
+            for k in range(Nt):
+                small_scale_CSI_new[i, j, k] = TFD_NTN_TDL_channel()
+    for i in range(L):
+        for j in range(L):
+            satellite_index = int(i / user_num)
+            user_index = int(j % user_num)
+            # large_scale_CSI = 4.4 * 10 ** 5 / ((dists[satellite_index, user_index,:] ** 1.88) * (10 ** (shadowing[satellite_index, user_index,:] * 6.3 / 20)))
+            # print('large_scale_CSI:{}'.format(large_scale_CSI))
+            # large_scale_CSI = 1
+            final_CSI_new[i, j, :] = small_scale_CSI_new[satellite_index, user_index, :]
+    final_CSI_new = final_CSI_new * np.sqrt(large_scale_CSI)
+    print('distance:{}'.format(distances))
+    print('dists:{}'.format(dists))
+    print('small_scale_CSI_new:{}'.format(small_scale_CSI_new))
+    # print('small_scale_CSI:{}'.format(small_scale_CSI))
+    # print('final_CSI:{}'.format(final_CSI))
+    print('final_CSI_new:{}'.format(final_CSI_new))
+    return final_CSI_new
+
 def Delay_generate(general_para, distances): ##单天线 这里要改成对应的星地信道
     # Nt = general_para.N_antennas
     L = general_para.n_receiver
@@ -487,8 +523,8 @@ def sample_generate_all(general_para, number_of_layouts, norm=None):
         # csis = CSI_generate_new2(general_para, dis)
         # delay, eta = Delay_generate_v1(general_para, dis)
         dis = distance_generate(general_para, layout_tx, layout_rx)
-        dis = np.random.rand(n_re, n_re)*1000
-        csis = CSI_generate_new(general_para, dis)
+        # csis = CSI_generate_new(general_para, dis)
+        csis = CSI_generate_new3(general_para, dis)
         delay, eta = Delay_generate_v1(general_para, dis)
         # data collection
         dists.append(dis)
