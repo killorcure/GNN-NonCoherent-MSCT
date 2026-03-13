@@ -3,7 +3,7 @@ import random
 
 import scipy.io as sio  # import scipy.io for .mat file I/O
 import numpy as np  # import numpy
-import matplotlib.pyplot as plt  # import matplotlib.pyplot for figure plotting
+# import matplotlib.pyplot as plt  # import matplotlib.pyplot for figure plotting
 import torch
 from torch import nn
 from torch_geometric.data import Data
