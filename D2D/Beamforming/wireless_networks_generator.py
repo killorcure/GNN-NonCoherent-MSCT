@@ -487,6 +487,7 @@ def sample_generate_all(general_para, number_of_layouts, norm=None):
         # csis = CSI_generate_new2(general_para, dis)
         # delay, eta = Delay_generate_v1(general_para, dis)
         dis = distance_generate(general_para, layout_tx, layout_rx)
+        dis = np.random.rand(n_re, n_re)*1000
         csis = CSI_generate_new(general_para, dis)
         delay, eta = Delay_generate_v1(general_para, dis)
         # data collection
