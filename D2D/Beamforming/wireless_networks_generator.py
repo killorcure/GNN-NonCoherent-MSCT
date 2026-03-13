@@ -74,8 +74,7 @@ def distance_generate_new(general_para, layout_tx, layout_rx):
     satellite_num = general_para.satellite_num
     user_num = general_para.user_num
     L = general_para.n_receiver
-    # distances_new = 500+np.random.rand(satellite_num, user_num)*500
-    distances_new = 500 + np.random.rand(L, L) * 500
+    distances_new = np.random.rand(satellite_num, user_num)*1000
     # final_distance_new = np.random.randn(L, L)
     # for i in range(L):
     #     for j in range(L):
@@ -259,6 +258,41 @@ def CSI_generate_new(general_para, distances):
 
     return final_CSI_new
 
+def CSI_generate_new2(general_para, distances):
+    Nt = general_para.N_antennas
+    L = general_para.n_receiver
+    satellite_num = general_para.satellite_num
+    user_num = general_para.user_num
+    dists = np.expand_dims(distances, axis=-1)
+    shadowing = np.random.randn(satellite_num,user_num,Nt)
+    # print('dists:{}, shadowing:{}'.format(dists, shadowing))
+    # large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
+    # small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt))*np.sqrt(large_scale_CSI)
+    small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt))
+    small_scale_CSI_new = np.random.randn(satellite_num,user_num,Nt)+1j*np.random.randn(satellite_num,user_num,Nt)
+    # final_CSI = np.random.randn(L, L, Nt) + 1j * np.random.randn(L, L, Nt)
+    final_CSI_new = np.random.randn(L, L, Nt) + 1j * np.random.randn(L, L, Nt)
+    for i in range(satellite_num):
+        for j in range(user_num):
+            for k in range(Nt):
+                small_scale_CSI_new[i, j, k] = TFD_NTN_TDL_channel()
+    for i in range(L):
+        for j in range(L):
+            satellite_index = int(i / user_num)
+            user_index = int(j % user_num)
+            large_scale_CSI = 4.4 * 10 ** 5 / ((dists[satellite_index, user_index,:] ** 1.88) * (10 ** (shadowing[satellite_index, user_index,:] * 6.3 / 20)))
+            # print('large_scale_CSI:{}'.format(large_scale_CSI))
+            # large_scale_CSI = 1
+            final_CSI_new[i, j, :] = small_scale_CSI_new[satellite_index, user_index, :]*np.sqrt(large_scale_CSI)
+            # final_CSI_new[i,j,:] = small_scale_CSI_new[satellite_index, user_index,:]
+    print('distance:{}'.format(distances))
+    print('dists:{}'.format(dists))
+    print('small_scale_CSI_new:{}'.format(small_scale_CSI_new))
+    print('small_scale_CSI:{}'.format(small_scale_CSI))
+    # print('final_CSI:{}'.format(final_CSI))
+    print('final_CSI_new:{}'.format(final_CSI_new))
+    return final_CSI_new
+
 def Delay_generate(general_para, distances): ##单天线 这里要改成对应的星地信道
     # Nt = general_para.N_antennas
     L = general_para.n_receiver
@@ -347,6 +381,50 @@ def Delay_generate_single_connection(general_para, distances): ##单天线 这�
     # print('small_scale_CSI:{}'.format(small_scale_CSI))
     return delays_sample
 
+def Delay_generate_v1(general_para, distances): ##单天线 这里要改成对应的星地信道
+    # Nt = general_para.N_antennas
+    L = general_para.n_receiver
+    satellite_num = general_para.satellite_num
+    user_num = general_para.user_num
+    # delay = 0.7*np.random.rand(satellite_num, user_num)
+    # print('delay by random :{}'.format(delay))
+    delay = distances / 1000
+    print('delay by distance:{}'.format(delay))
+    # delay = np.random.rand(satellite_num,user_num)
+    # for m in range(satellite_num):
+    #     for n in range(user_num):
+    #         delay[m,n] = distances[m,n] / 1000
+    delays_sample = np.zeros((L, L))
+    eta_sample = np.random.rand(L, L)*2-1
+    for i in range(L):
+        for j in range(L):
+            satellite_from_index = int(i / user_num)
+            satellite_to_index = int(j / user_num)
+            user_from_index = int(i % user_num)
+            user_to_index = int(j % user_num)
+            delays_sample[i, j] = delay[satellite_to_index, user_to_index] - delay[satellite_from_index, user_from_index]
+    # delays_sample = np.triu(delays_sample, k=1)
+    # delays = delays_sample - delays_sample.T
+    # large_scale_CSI = 4.4*10**5/((dists**1.88)*(10**(shadowing*6.3/20)))
+    # small_scale_CSI = 1/np.sqrt(2)*(np.random.randn(L,L,Nt)+1j*np.random.randn(L,L,Nt))*np.sqrt(large_scale_CSI)
+    # print('distance:{}'.format(distances))
+    print('delays_sample by distance:{}'.format(delays_sample))
+    for i in range(L):
+        for j in range(L):
+            # satellite_from_index = int(i / user_num)
+            # satellite_to_index = int(j / user_num)
+            # user_from_index = int(i % user_num)
+            # user_to_index = int(j % user_num)
+            # delays_sample[i,j] = delay[satellite_to_index, user_to_index] - delay[satellite_from_index, user_from_index]
+            # left_delta_delay = delay[satellite_to_index, user_to_index] - delay[satellite_to_index, user_from_index]
+            # right_delta_delay = delay[satellite_from_index, user_to_index] - delay[satellite_from_index, user_from_index]
+            if i == j:
+                eta_sample[i, j] = 0
+            else:
+                eta_sample[i, j] = calculate_eta_one(delays_sample[i,j])
+    # print('small_scale_CSI:{}'.format(small_scale_CSI))
+    return delays_sample, eta_sample
+
 def sample_generate(general_para, number_of_layouts, norm = None):
     print("<<<<<<<<<<<<<{} layouts: {}>>>>>>>>>>>>".format(
         number_of_layouts, general_para.setting_str))
@@ -381,8 +459,9 @@ def sample_generate_asyn(general_para, number_of_layouts, norm=None):
         layout_tx, layout_rx = layout_generate(general_para)
         n_re = general_para.n_receiver
         dis = distance_generate_new(general_para, layout_tx, layout_rx)
-        csis = CSI_generate_new(general_para, dis)
-        delay = Delay_generate_single_connection(general_para, dis)
+        csis = CSI_generate_new2(general_para, dis)
+        # delay = Delay_generate_single_connection(general_para, dis)
+        delay = Delay_generate_v1(general_para, dis)
         # data collection
         dists.append(dis)
         CSIs.append(csis)
@@ -404,9 +483,9 @@ def sample_generate_all(general_para, number_of_layouts, norm=None):
         # generate layouts
         layout_tx, layout_rx = layout_generate(general_para)
         n_re = general_para.n_receiver
-        dis = distance_generate(general_para, layout_tx, layout_rx)
+        dis = distance_generate_new(general_para, layout_tx, layout_rx)
         csis = CSI_generate_new(general_para, dis)
-        delay, eta = Delay_generate(general_para, dis)
+        delay, eta = Delay_generate_v1(general_para, dis)
         # data collection
         dists.append(dis)
         CSIs.append(csis)
